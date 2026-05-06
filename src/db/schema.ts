@@ -128,6 +128,19 @@ export const runItem = pgTable(
   }),
 );
 
+export const authAttempt = pgTable(
+  "auth_attempt",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ip: text("ip").notNull(),
+    succeeded: boolean("succeeded").notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    ipTimeIdx: index("auth_attempt_ip_time_idx").on(t.ip, t.attemptedAt),
+  }),
+);
+
 export const staffRelations = relations(staff, ({ many }) => ({
   staffRoles: many(staffRole),
   runs: many(checklistRun),
