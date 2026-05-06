@@ -4,6 +4,7 @@ import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
 import { isValidPin, verifyPin } from "@/lib/pin";
 import { startStaffSession } from "@/lib/staff-session";
+import { startAdminSession } from "@/lib/session";
 
 const Body = z.object({ pin: z.string() });
 
@@ -21,7 +22,8 @@ export async function POST(req: Request) {
   for (const s of candidates) {
     if (await verifyPin(body.data.pin, s.pinHash)) {
       await startStaffSession(s.id);
-      return NextResponse.json({ ok: true });
+      if (s.isManager) await startAdminSession();
+      return NextResponse.json({ ok: true, isManager: s.isManager });
     }
   }
 

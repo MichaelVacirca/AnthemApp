@@ -58,9 +58,3 @@ export async function isAdminAuthenticated(): Promise<boolean> {
   const ageSeconds = (Date.now() - issuedAt) / 1000;
   return ageSeconds < COOKIE_MAX_AGE_SECONDS;
 }
-
-export function checkAdminPassword(password: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected || expected.length === 0) return false;
-  return safeEqual(password, expected);
-}

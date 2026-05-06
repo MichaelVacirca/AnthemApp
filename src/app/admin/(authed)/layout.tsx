@@ -6,7 +6,7 @@ import AdminNav from "../_components/AdminNav";
 async function logout() {
   "use server";
   await endAdminSession();
-  redirect("/admin/login");
+  redirect("/");
 }
 
 export default function AuthedAdminLayout({ children }: { children: React.ReactNode }) {

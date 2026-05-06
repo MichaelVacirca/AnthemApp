@@ -1,7 +1,18 @@
-import Link from "next/link";
 import PinPad from "./_components/PinPad";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const message =
+    error === "manager_required"
+      ? "Manager access required. Enter a manager PIN."
+      : error === "missing_secret"
+        ? "Server is misconfigured (SESSION_SECRET missing)."
+        : null;
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-10">
       <div className="mb-8 text-center">
@@ -10,16 +21,10 @@ export default function Home() {
         <p className="mt-2 text-sm text-white/60">
           Enter your Toast PIN to start your opening or closing checklist.
         </p>
+        {message ? <p className="mt-3 text-sm text-red-400">{message}</p> : null}
       </div>
 
       <PinPad />
-
-      <Link
-        href="/admin/login"
-        className="mt-10 text-xs uppercase tracking-widest text-white/40 hover:text-white/70"
-      >
-        Manager sign-in
-      </Link>
     </main>
   );
 }

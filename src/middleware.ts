@@ -47,16 +47,15 @@ async function isValidCookie(raw: string | undefined, secret: string): Promise<b
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (!pathname.startsWith("/admin")) return NextResponse.next();
-  if (pathname === "/admin/login") return NextResponse.next();
 
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 16) {
-    return NextResponse.redirect(new URL("/admin/login?error=missing_secret", req.url));
+    return NextResponse.redirect(new URL("/?error=missing_secret", req.url));
   }
 
   const cookie = req.cookies.get(ADMIN_COOKIE)?.value;
   if (!(await isValidCookie(cookie, secret))) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
+    return NextResponse.redirect(new URL("/?error=manager_required", req.url));
   }
   return NextResponse.next();
 }

@@ -32,14 +32,14 @@ export default function PinPad() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ pin }),
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
+      const data = (await res.json()) as { ok: boolean; error?: string; isManager?: boolean };
       if (!res.ok || !data.ok) {
         setError(data.error ?? "PIN not recognized.");
         setPin("");
         setSubmitting(false);
         return;
       }
-      router.push("/shift/new");
+      router.push(data.isManager ? "/admin" : "/shift/new");
     } catch {
       setError("Could not reach the server. Try again.");
       setSubmitting(false);

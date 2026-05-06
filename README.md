@@ -8,7 +8,7 @@ Built with Next.js 15 (App Router), Postgres, Drizzle ORM, and Tailwind CSS. Des
 
 - Staff PIN entry → role/shift selection → checklist sign-off
 - Each tap saves immediately. Sign-off only allowed when required items are checked.
-- Manager admin at `/admin` (password gate, separate from staff PIN)
+- Manager admin at `/admin`. Staff flagged as managers get admin access automatically when they enter their PIN.
 - All shift activity is recorded with timestamps for the manager dashboard and history view
 
 > **PINs are stored hashed (bcrypt).** Toast PIN integration is intentionally _not_ used — this app maintains its own staff/PIN list. Swap in the Toast API later by replacing `src/app/api/auth/pin/route.ts` and the staff/role provisioning UI.
@@ -31,7 +31,6 @@ Built with Next.js 15 (App Router), Postgres, Drizzle ORM, and Tailwind CSS. Des
 
    Fill in:
    - `DATABASE_URL` — your Postgres connection string
-   - `ADMIN_PASSWORD` — the manager password
    - `SESSION_SECRET` — any random string of 16+ characters
 
 4. **Run migrations and seed sample data**
@@ -55,7 +54,7 @@ Built with Next.js 15 (App Router), Postgres, Drizzle ORM, and Tailwind CSS. Des
 
 1. Push to GitHub.
 2. Import the repo on Vercel.
-3. Set env vars: `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`.
+3. Set env vars: `DATABASE_URL`, `SESSION_SECRET`.
 4. After the first deploy, run migrations against production:
    ```sh
    DATABASE_URL=<prod-url> npm run db:migrate
@@ -65,7 +64,7 @@ Built with Next.js 15 (App Router), Postgres, Drizzle ORM, and Tailwind CSS. Des
 ## Day-to-day use
 
 - **Staff**: open the app on a tablet behind the bar. Enter PIN, choose role + opening/closing, work the checklist.
-- **Managers**: visit `/admin/login`, enter the manager password. Add staff and PINs, build checklists per role + shift, watch the dashboard.
+- **Managers**: enter your PIN on the same screen. If your staff record has the manager flag, you're routed to `/admin` to add staff, build checklists, and watch the dashboard. Promote/demote managers from the staff page.
 
 Business "day" rolls over at 6 AM local time so closing shifts after midnight stay grouped with the previous evening.
 
