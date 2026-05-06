@@ -50,16 +50,16 @@ Built with Next.js 15 (App Router), Postgres, Drizzle ORM, and Tailwind CSS. Des
 
    Visit http://localhost:3000.
 
-## Production / Vercel
+## Deploying
 
-1. Push to GitHub.
-2. Import the repo on Vercel.
-3. Set env vars: `DATABASE_URL`, `SESSION_SECRET`.
-4. After the first deploy, run migrations against production:
-   ```sh
-   DATABASE_URL=<prod-url> npm run db:migrate
-   ```
-5. Optionally seed sample data the first time, or add staff via the admin UI.
+For a Digital Ocean droplet (bare Node + systemd + Caddy + local Postgres),
+see [`deploy/README.md`](deploy/README.md). It includes a one-shot
+`setup.sh` for first-time droplet provisioning and a `deploy.sh` for
+subsequent updates.
+
+For Vercel: import the repo, set `DATABASE_URL` and `SESSION_SECRET`, run
+`DATABASE_URL=<prod-url> npm run db:migrate` against your DB after the
+first deploy.
 
 ## Day-to-day use
 
@@ -80,6 +80,23 @@ Business "day" rolls over at 6 AM local time so closing shifts after midnight st
 | `npm run db:migrate` | Apply pending migrations                    |
 | `npm run db:seed`    | Insert sample roles, checklists, and staff  |
 | `npm run db:studio`  | Open Drizzle Studio against your DB         |
+| `npm run test:e2e`   | Run Playwright end-to-end tests             |
+| `npm run test:e2e:install` | Install the Playwright browser (one-time) |
+
+## Tests
+
+End-to-end tests live in `tests/e2e/` (Playwright). They drive a real
+browser against `npm run dev`. To run them:
+
+```sh
+npm run test:e2e:install      # one-time, downloads the chromium binary
+E2E_DATABASE_URL=postgres://... npm run test:e2e
+```
+
+Point `E2E_DATABASE_URL` at a **dedicated test database** — the suite
+mutates `auth_attempt` and may insert/update a manager staff row. The
+suite expects that database to already have migrations applied
+(`npm run db:migrate` against the test URL once before the first run).
 
 ## Schema overview
 

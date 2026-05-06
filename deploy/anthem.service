@@ -1,0 +1,28 @@
+[Unit]
+Description=Anthem bar checklist (Next.js)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=anthem
+Group=anthem
+WorkingDirectory=/srv/anthem/current
+EnvironmentFile=/etc/anthem/anthem.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3000
+Restart=on-failure
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/anthem
+
+[Install]
+WantedBy=multi-user.target

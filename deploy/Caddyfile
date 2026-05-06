@@ -1,0 +1,21 @@
+# Replace anthem.example.com with your real domain. Caddy auto-issues
+# Let's Encrypt certs as long as DNS A/AAAA records point at this droplet
+# and ports 80/443 are open.
+
+anthem.example.com {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
