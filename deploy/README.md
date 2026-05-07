@@ -71,14 +71,36 @@ The deploy script needs to run `sudo systemctl restart anthem`. Either:
   sudo chmod 440 /etc/sudoers.d/anthem-restart
   ```
 
+## Optional: error monitoring (Sentry)
+
+Sentry is wired in but disabled unless `SENTRY_DSN` is set. To turn it on,
+add the following to `/etc/anthem/anthem.env` and restart:
+
+```
+SENTRY_DSN=https://...ingest.sentry.io/...
+NEXT_PUBLIC_SENTRY_DSN=https://...ingest.sentry.io/...
+SENTRY_ORG=your-sentry-org
+SENTRY_PROJECT=your-sentry-project
+SENTRY_AUTH_TOKEN=sntrys_...   # only needed if you want source-map uploads
+```
+
+Source maps upload during `npm run build` if `SENTRY_ORG`, `SENTRY_PROJECT`,
+and `SENTRY_AUTH_TOKEN` are all set. Without them, errors still report,
+just with minified stack traces.
+
 ## Operational notes
 
 - **Logs:** `journalctl -u anthem -f` (app), `journalctl -u caddy -f` (TLS/proxy).
 - **Env changes** require a service restart: edit `/etc/anthem/anthem.env`,
   then `sudo systemctl restart anthem`.
-- **Postgres backups** are NOT set up automatically. Recommend a daily
-  `pg_dump` cron to a separate volume or off-droplet (DO Spaces, S3).
-  Quickest: `0 4 * * * pg_dump -U anthem anthem | gzip > /srv/anthem/backups/$(date +\%F).sql.gz`
+- **Postgres backups** run daily at 04:00 UTC via the `anthem-backup.timer`
+  systemd timer (installed by `setup.sh`). Dumps land in
+  `/srv/anthem/backups/anthem-<UTC-date>.sql.gz` and the script keeps the
+  last 14 by default. Tweak `RETAIN_DAYS` or set `BACKUP_UPLOAD_CMD` in
+  `/etc/anthem/backup.env` to ship dumps off-droplet (S3, DO Spaces).
+  Manual run: `sudo systemctl start anthem-backup.service`. Last run:
+  `sudo systemctl status anthem-backup.service` and
+  `sudo journalctl -u anthem-backup.service`.
 - **Rate-limit table grows.** `auth_attempt` rows accumulate forever.
   Recommend a weekly cleanup once you're live:
   `DELETE FROM auth_attempt WHERE attempted_at < now() - interval '30 days';`

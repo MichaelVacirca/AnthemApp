@@ -9,6 +9,7 @@ const NAV: Array<{ href: string; label: string }> = [
   { href: "/admin/roles", label: "Roles" },
   { href: "/admin/checklists", label: "Checklists" },
   { href: "/admin/history", label: "History" },
+  { href: "/admin/audit", label: "Audit log" },
 ];
 
 export default function AdminNav() {

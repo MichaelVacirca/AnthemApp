@@ -10,6 +10,7 @@ import {
   primaryKey,
   uniqueIndex,
   index,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -138,6 +139,23 @@ export const authAttempt = pgTable(
   },
   (t) => ({
     ipTimeIdx: index("auth_attempt_ip_time_idx").on(t.ip, t.attemptedAt),
+  }),
+);
+
+export const adminAction = pgTable(
+  "admin_action",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    staffId: uuid("staff_id").references(() => staff.id, { onDelete: "set null" }),
+    action: text("action").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: uuid("target_id"),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    createdAtIdx: index("admin_action_created_at_idx").on(t.createdAt),
+    staffIdx: index("admin_action_staff_idx").on(t.staffId),
   }),
 );
 

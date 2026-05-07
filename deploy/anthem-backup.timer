@@ -1,0 +1,11 @@
+[Unit]
+Description=Run anthem-backup.service daily
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+RandomizedDelaySec=15min
+Persistent=true
+Unit=anthem-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { hashPin, isValidPin, verifyPin } from "@/lib/pin";
+import { logAdminAction } from "@/lib/audit";
 
 const Create = z.object({
   name: z.string().trim().min(1).max(80),
@@ -39,7 +40,7 @@ export async function createStaff(formData: FormData) {
   }
 
   const pinHash = await hashPin(pin);
-  await db.transaction(async (tx) => {
+  const createdId = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(schema.staff)
       .values({ name, pinHash, isManager: !!isManager })
@@ -49,6 +50,13 @@ export async function createStaff(formData: FormData) {
         .insert(schema.staffRole)
         .values(roleIds.map((roleId) => ({ staffId: created.id, roleId })));
     }
+    return created.id;
+  });
+  await logAdminAction({
+    action: "staff.create",
+    targetType: "staff",
+    targetId: createdId,
+    metadata: { name, isManager: !!isManager, roleIds: roleIds ?? [] },
   });
   revalidatePath("/admin/staff");
   return { ok: true } as const;
@@ -105,6 +113,18 @@ export async function updateStaff(formData: FormData) {
         .values(roleIds.map((roleId) => ({ staffId: id, roleId })));
     }
   });
+  await logAdminAction({
+    action: "staff.update",
+    targetType: "staff",
+    targetId: id,
+    metadata: {
+      name,
+      active: !!active,
+      isManager: !!isManager,
+      roleIds: roleIds ?? [],
+      pinChanged: !!(pin && pin.length > 0),
+    },
+  });
   revalidatePath("/admin/staff");
   return { ok: true } as const;
 }
@@ -112,12 +132,14 @@ export async function updateStaff(formData: FormData) {
 export async function deactivateStaff(formData: FormData) {
   const id = String(formData.get("id"));
   await db.update(schema.staff).set({ active: false }).where(eq(schema.staff.id, id));
+  await logAdminAction({ action: "staff.deactivate", targetType: "staff", targetId: id });
   revalidatePath("/admin/staff");
 }
 
 export async function reactivateStaff(formData: FormData) {
   const id = String(formData.get("id"));
   await db.update(schema.staff).set({ active: true }).where(eq(schema.staff.id, id));
+  await logAdminAction({ action: "staff.reactivate", targetType: "staff", targetId: id });
   revalidatePath("/admin/staff");
 }
 
