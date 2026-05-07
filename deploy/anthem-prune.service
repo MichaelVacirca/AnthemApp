@@ -1,0 +1,18 @@
+[Unit]
+Description=Anthem DB prune (auth_attempt, admin_action)
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=anthem
+Group=anthem
+WorkingDirectory=/srv/anthem/current
+EnvironmentFile=/etc/anthem/anthem.env
+EnvironmentFile=-/etc/anthem/prune.env
+ExecStart=/usr/bin/npm run db:prune --silent
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

@@ -82,6 +82,8 @@ echo "==> Installing systemd units"
 install -m 644 "$APP_ROOT/current/deploy/anthem.service" /etc/systemd/system/anthem.service
 install -m 644 "$APP_ROOT/current/deploy/anthem-backup.service" /etc/systemd/system/anthem-backup.service
 install -m 644 "$APP_ROOT/current/deploy/anthem-backup.timer" /etc/systemd/system/anthem-backup.timer
+install -m 644 "$APP_ROOT/current/deploy/anthem-prune.service" /etc/systemd/system/anthem-prune.service
+install -m 644 "$APP_ROOT/current/deploy/anthem-prune.timer" /etc/systemd/system/anthem-prune.timer
 
 mkdir -p /srv/anthem/backups
 chown postgres:postgres /srv/anthem/backups
@@ -90,6 +92,7 @@ chmod 750 /srv/anthem/backups
 systemctl daemon-reload
 systemctl enable anthem.service
 systemctl enable --now anthem-backup.timer
+systemctl enable --now anthem-prune.timer
 
 echo "==> Installing Caddyfile"
 if [[ -n "$DOMAIN" ]]; then

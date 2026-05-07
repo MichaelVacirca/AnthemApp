@@ -101,9 +101,15 @@ just with minified stack traces.
   Manual run: `sudo systemctl start anthem-backup.service`. Last run:
   `sudo systemctl status anthem-backup.service` and
   `sudo journalctl -u anthem-backup.service`.
-- **Rate-limit table grows.** `auth_attempt` rows accumulate forever.
-  Recommend a weekly cleanup once you're live:
-  `DELETE FROM auth_attempt WHERE attempted_at < now() - interval '30 days';`
+- **DB pruning** runs daily at 03:30 UTC via `anthem-prune.timer` (installed
+  by `setup.sh`). Deletes `auth_attempt` rows older than 24h and
+  `admin_action` rows older than 365d, then `VACUUM ANALYZE`s. Override the
+  windows by writing `/etc/anthem/prune.env` with `AUTH_ATTEMPT_RETAIN_HOURS=`
+  and/or `ADMIN_ACTION_RETAIN_DAYS=`. Manual run:
+  `sudo systemctl start anthem-prune.service`.
+- **Health check** at `GET /api/health` returns `{ ok: true, db: "up" }`
+  (200) when the DB is reachable, 503 otherwise. Caddy uses this for
+  upstream health and you can point uptime monitors at it too.
 - **Caddy auto-renews** the TLS cert; nothing to do.
 - **Trust proxy.** The systemd unit binds Next to `127.0.0.1` only; Caddy
   forwards `X-Forwarded-For`, which the rate limiter reads. Never expose
